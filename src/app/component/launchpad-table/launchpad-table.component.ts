@@ -1,6 +1,4 @@
 import {Component} from '@angular/core';
-// import {Component, ChangeDetectorRef, ViewChildren, QueryList} from '@angular/core';
-// import {  OnInit, ViewChild } from '@angular/core';
 import {LaunchpadService} from "../../service/launchpad.service";
 
 import {
@@ -64,7 +62,7 @@ export class LaunchpadTableComponent {
   launchpadsSource: any;
   launchersSource: any;
   columnsToDisplay: string[] = ["name", "region"];
-  launchesDisplayedColumns = ["success", "details", "links.wikipedia"];
+  launchesDisplayedColumns = ["success", "details", "wikipedia"];
   launchpads: Launchpad[] = [];
   launches: Launch[] = [];
   expandedElement !: Launchpad;
@@ -112,7 +110,6 @@ export class LaunchpadTableComponent {
     this.launchService.getByParams(queryRequest).subscribe(value => {
       this.launches = value.docs
       this.launchersSource = new MatTableDataSource(this.launches);
-      console.log()
     })
 
   }
@@ -145,7 +142,6 @@ export class LaunchpadTableComponent {
   }
 
   toggleRow(element: Launchpad) {
-    console.log()
     this.expandedElement = element
     const launchersQueryRequest: QueryRequest = {
       query: {
@@ -159,10 +155,6 @@ export class LaunchpadTableComponent {
       }
     }
     this.getLaunchesByParams(launchersQueryRequest);
-    console.log()
-    // element.addresses && (element.addresses as MatTableDataSource<Address>).data.length ? (this.expandedElement = this.expandedElement === element ? null : element) : null;
-    // this.cd.detectChanges();
-    // this.innerTables.forEach((table, index) => (table.dataSource as MatTableDataSource<Address>).sort = this.innerSort.toArray()[index]);
   }
 
 }

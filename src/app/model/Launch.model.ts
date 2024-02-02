@@ -6,5 +6,5 @@ export interface Launch {
 }
 
 interface Link {
-  "wikipedia": string
+
 }
