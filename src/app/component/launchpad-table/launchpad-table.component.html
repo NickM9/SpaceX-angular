@@ -4,6 +4,10 @@
     </mat-card-header>
   <mat-card-content>
 
+    <mat-form-field>
+      <mat-label>Name and region filter</mat-label>
+      <input matInput (keyup)="filterEvent($event)" placeholder="Warning: Case sensitive" #input>
+    </mat-form-field>
     <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
 

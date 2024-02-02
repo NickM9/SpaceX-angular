@@ -1,11 +1,13 @@
 export interface QueryRequest {
-  query?: Query,
+  query: Query,
   options: Options
 }
 
 export interface Query {
-  name: String,
-  region: String
+  "$or": [
+    { "name": { "$regex": string, "$options": string } },
+    { "region": { "$regex": string, "$options": string } }
+  ]
 }
 
 export interface Options {
