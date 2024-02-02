@@ -1,4 +1,6 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component} from '@angular/core';
+// import {Component, ChangeDetectorRef, ViewChildren, QueryList} from '@angular/core';
+// import {  OnInit, ViewChild } from '@angular/core';
 import {LaunchpadService} from "../../service/launchpad.service";
 
 import {
@@ -13,16 +15,25 @@ import {
   MatTableModule
 } from "@angular/material/table";
 import {MatCard, MatCardContent, MatCardFooter, MatCardHeader} from "@angular/material/card";
-import {NgForOf, TitleCasePipe} from "@angular/common";
+import {NgForOf, NgIf, TitleCasePipe} from "@angular/common";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {QueryRequest} from "../../model/QueryRequest.model";
 import {MatFormField} from "@angular/material/form-field";
 import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {Launchpad} from "../../model/Launchpad.model";
+import {Launch} from "../../model/Launch.model";
+import {animate, state, style, transition, trigger} from "@angular/animations";
+import {LaunchService} from "../../service/launch.service";
 
 @Component({
-  selector: 'app-launchpad-table',
-  standalone: true,
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({height: '0px', minHeight: '0'})),
+      state('expanded', style({height: '*'})),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
   imports: [
     MatTableModule,
     MatCard,
@@ -41,22 +52,29 @@ import {MatFormFieldModule} from '@angular/material/form-field';
     MatPaginator,
     MatFormField,
     MatInputModule,
-    MatFormFieldModule
+    MatFormFieldModule,
+    NgIf
   ],
-  templateUrl: './launchpad-table.component.html',
-  styleUrl: './launchpad-table.component.css'
+  selector: 'app-launchpad-table',
+  standalone: true,
+  styleUrl: './launchpad-table.component.css',
+  templateUrl: './launchpad-table.component.html'
 })
 export class LaunchpadTableComponent {
-  dataSource: any;
-  columnsToDisplay: string[] = ["name", "region", "launches"];
-  // launchpads: Launchpad[] = [];
+  launchpadsSource: any;
+  launchersSource: any;
+  columnsToDisplay: string[] = ["name", "region"];
+  launchesDisplayedColumns = ["success", "details", "links.wikipedia"];
+  launchpads: Launchpad[] = [];
+  launches: Launch[] = [];
+  expandedElement !: Launchpad;
 
   // pagination params
   totalRecords: number = 0;
   pageSize: number = 5;
   pageIndex: number = 0;
 
-  queryRequest: QueryRequest = {
+  launchpadsQueryRequest: QueryRequest = {
     query: {
       $or: [
         {name: { $regex: "", $options: "i" }},
@@ -64,23 +82,25 @@ export class LaunchpadTableComponent {
       ]
     },
     options: {
-      select: ["name", "region", "launches"],
+      select: ["id", "name", "region", "launches"],
       page: ++this.pageIndex,
-      limit: this.pageSize
+      limit: this.pageSize,
+      pagination: true
     }
   };
 
-  constructor(private service: LaunchpadService) {
+  constructor(private launchpadService: LaunchpadService, private launchService: LaunchService) {
   }
 
 
   ngOnInit() {
-    this.getByParams(this.queryRequest);
+    this.getLaunchPadsByParams(this.launchpadsQueryRequest);
   }
 
-  getByParams(queryRequest: QueryRequest) {
-    this.service.getByParams(queryRequest).subscribe(value => {
-      this.dataSource = new MatTableDataSource(value.docs);
+  getLaunchPadsByParams(queryRequest: QueryRequest) {
+    this.launchpadService.getByParams(queryRequest).subscribe(value => {
+      this.launchpads = value.docs
+      this.launchpadsSource = new MatTableDataSource(this.launchpads);
       this.totalRecords = value.totalDocs;
       this.pageSize = value.limit;
       this.pageIndex = --value.page;
@@ -88,22 +108,31 @@ export class LaunchpadTableComponent {
 
   }
 
+  getLaunchesByParams(queryRequest: QueryRequest) {
+    this.launchService.getByParams(queryRequest).subscribe(value => {
+      this.launches = value.docs
+      this.launchersSource = new MatTableDataSource(this.launches);
+      console.log()
+    })
+
+  }
+
   pageChangeEvent(event: PageEvent) {
-    this.queryRequest = {
-      ...this.queryRequest,
+    this.launchpadsQueryRequest = {
+      ...this.launchpadsQueryRequest,
       options: {
-        ...this.queryRequest.options,
+        ...this.launchpadsQueryRequest.options,
         page: ++event.pageIndex,
         limit: event.pageSize
       }
     }
-    this.getByParams(this.queryRequest);
+    this.getLaunchPadsByParams(this.launchpadsQueryRequest);
   }
 
   filterEvent(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.queryRequest = {
-      ...this.queryRequest,
+    this.launchpadsQueryRequest = {
+      ...this.launchpadsQueryRequest,
       query: {
         $or: [
           {name: { $regex: filterValue, $options: "i" }},
@@ -112,7 +141,28 @@ export class LaunchpadTableComponent {
       }
 
     }
-    this.getByParams(this.queryRequest);
+    this.getLaunchPadsByParams(this.launchpadsQueryRequest);
+  }
+
+  toggleRow(element: Launchpad) {
+    console.log()
+    this.expandedElement = element
+    const launchersQueryRequest: QueryRequest = {
+      query: {
+        _id: {
+          $in: element.launches
+        }
+      },
+      options: {
+        select: ["success", "details", "links.wikipedia"],
+        pagination: false
+      }
+    }
+    this.getLaunchesByParams(launchersQueryRequest);
+    console.log()
+    // element.addresses && (element.addresses as MatTableDataSource<Address>).data.length ? (this.expandedElement = this.expandedElement === element ? null : element) : null;
+    // this.cd.detectChanges();
+    // this.innerTables.forEach((table, index) => (table.dataSource as MatTableDataSource<Address>).sort = this.innerSort.toArray()[index]);
   }
 
 }
