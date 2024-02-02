@@ -44,7 +44,7 @@ import {QueryRequest} from "../../model/QueryRequest.model";
 export class LaunchpadTableComponent {
 
   totalRecords = 0;
-  pageSize = 2;
+  pageSize = 5;
   pageIndex = 0;
 
   dataSource: any;
