@@ -4,7 +4,8 @@ import {Launch} from "./Launch.model";
 export interface QueryResult {
   // docs: Launchpad[] | Launch[],
   docs: any[],
-  totalDocs: number
+  totalDocs: number,
+  limit: number,
   totalPages: number,
   page: number,
   pagingCounter: number,
