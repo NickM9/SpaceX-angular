@@ -82,8 +82,8 @@ export class LaunchpadTableComponent {
     this.service.getByParams(queryRequest).subscribe(value => {
       this.dataSource = new MatTableDataSource(value.docs);
       this.totalRecords = value.totalDocs;
-      this.pageSize = value.limit
-      this.pageIndex = value.page
+      this.pageSize = value.limit;
+      this.pageIndex = --value.page;
     })
 
   }
